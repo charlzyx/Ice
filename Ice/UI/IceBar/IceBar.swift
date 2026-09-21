@@ -238,7 +238,6 @@ private struct IceBarContentView: View {
     @EnvironmentObject var imageCache: MenuBarItemImageCache
     @EnvironmentObject var menuBarManager: MenuBarManager
     @State private var frame = CGRect.zero
-    @State private var scrollIndicatorsFlashTrigger = 0
 
     let screen: NSScreen
     let section: MenuBarSection.Name
@@ -257,24 +256,40 @@ private struct IceBarContentView: View {
     }
 
     private var verticalPadding: CGFloat {
-        screen.hasNotch ? 0 : 2
+        5
     }
 
-    private var contentHeight: CGFloat? {
-        guard let menuBarHeight = imageCache.menuBarHeight ?? screen.getMenuBarHeight() else {
-            return nil
-        }
-        if configuration.shapeKind != .none && configuration.isInset && screen.hasNotch {
-            return menuBarHeight - appState.appearanceManager.menuBarInsetAmount * 2
-        }
-        return menuBarHeight
+    /// The height of a single row in the vertical bar, roughly the height
+    /// of a menu bar item.
+    private var rowHeight: CGFloat {
+        imageCache.menuBarHeight ?? screen.getMenuBarHeight() ?? 24
+    }
+
+    /// The width of the vertical bar, sized to fit a single menu bar item.
+    private var contentWidth: CGFloat {
+        rowHeight + horizontalPadding * 2
+    }
+
+    /// The maximum height of the vertical bar, leaving room above and below
+    /// for the menu bar and the edges of the screen.
+    private var maxContentHeight: CGFloat {
+        (screen.frame.height - 40) * 0.7
+    }
+
+    /// The ideal height of the vertical bar, based on the number of items.
+    private var idealContentHeight: CGFloat {
+        max(CGFloat(items.count) * rowHeight, rowHeight)
+    }
+
+    private var contentHeight: CGFloat {
+        min(idealContentHeight, maxContentHeight)
     }
 
     private var clipShape: AnyInsettableShape {
         if configuration.hasRoundedShape {
             AnyInsettableShape(Capsule())
         } else {
-            AnyInsettableShape(RoundedRectangle(cornerRadius: frame.height / 5, style: .continuous))
+            AnyInsettableShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 
@@ -285,7 +300,7 @@ private struct IceBarContentView: View {
     var body: some View {
         ZStack {
             content
-                .frame(height: contentHeight)
+                .frame(width: contentWidth, height: contentHeight)
                 .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, verticalPadding)
                 .layoutBarStyle(appState: appState, averageColorInfo: colorManager.colorInfo)
@@ -301,48 +316,43 @@ private struct IceBarContentView: View {
             }
         }
         .padding(5)
-        .frame(maxWidth: imageCache.screen?.frame.width)
-        .fixedSize()
         .onFrameChange(update: $frame)
     }
 
     @ViewBuilder
     private var content: some View {
         if !ScreenCapture.cachedCheckPermissions() {
-            HStack {
-                Text("The Ice Bar requires screen recording permissions.")
+            VStack {
+                Text("Ice Bar 需要屏幕录制权限。")
 
                 Button {
                     closePanel()
                     appState.navigationState.settingsNavigationIdentifier = .advanced
                     appState.appDelegate?.openSettingsWindow()
                 } label: {
-                    Text("Open Ice Settings")
+                    Text("打开 Ice 设置")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.link)
             }
             .padding(.horizontal, 10)
         } else if menuBarManager.isMenuBarHiddenBySystemUserDefaults {
-            Text("Ice cannot display menu bar items for automatically hidden menu bars")
+            Text("在系统自动隐藏菜单栏的情况下，Ice 无法显示菜单栏图标")
                 .padding(.horizontal, 10)
         } else if imageCache.cacheFailed(for: section) {
-            Text("Unable to display menu bar items")
+            Text("无法显示菜单栏图标")
                 .padding(.horizontal, 10)
         } else {
-            ScrollView(.horizontal) {
-                HStack(spacing: 0) {
+            ScrollView(.vertical) {
+                VStack(spacing: 0) {
                     ForEach(items, id: \.windowID) { item in
                         IceBarItemView(item: item, closePanel: closePanel)
+                            .frame(height: rowHeight)
                     }
                 }
             }
-            .environment(\.isScrollEnabled, frame.width == imageCache.screen?.frame.width)
-            .defaultScrollAnchor(.trailing)
-            .scrollIndicatorsFlash(trigger: scrollIndicatorsFlashTrigger)
-            .task {
-                scrollIndicatorsFlashTrigger += 1
-            }
+            .defaultScrollAnchor(.leading)
+            .scrollIndicators(.hidden)
         }
     }
 }
@@ -404,8 +414,8 @@ private struct IceBarItemView: View {
                     IceBarItemClickView(item: item, leftClickAction: leftClickAction, rightClickAction: rightClickAction)
                 }
                 .accessibilityLabel(item.displayName)
-                .accessibilityAction(named: "left click", leftClickAction)
-                .accessibilityAction(named: "right click", rightClickAction)
+                .accessibilityAction(named: "左键点击", leftClickAction)
+                .accessibilityAction(named: "右键点击", rightClickAction)
         }
     }
 }

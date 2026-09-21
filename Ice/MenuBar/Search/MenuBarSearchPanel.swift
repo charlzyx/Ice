@@ -191,8 +191,8 @@ private struct MenuBarSearchContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TextField(text: $searchText, prompt: Text("Search menu bar items…")) {
-                Text("Search menu bar items…")
+            TextField(text: $searchText, prompt: Text("搜索菜单栏图标…")) {
+                Text("搜索菜单栏图标…")
             }
             .labelsHidden()
             .textFieldStyle(.plain)
@@ -374,7 +374,7 @@ private struct ShowItemButton: View {
     var body: some View {
         BottomBarButton(action: action) {
             HStack {
-                Text(item.isOnScreen ? "Click item" : "Show item")
+                Text(item.isOnScreen ? "点击图标" : "显示图标")
                     .padding(.horizontal, 5)
 
                 Image(systemName: "return")

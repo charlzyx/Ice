@@ -25,11 +25,11 @@ struct GeneralSettingsPane: View {
     private func localizedOffsetString(for offset: CGFloat) -> LocalizedStringKey {
         switch offset {
         case -16:
-            return LocalizedStringKey("none")
+            return LocalizedStringKey("无")
         case 0:
-            return LocalizedStringKey("default")
+            return LocalizedStringKey("默认")
         case 16:
-            return LocalizedStringKey("max")
+            return LocalizedStringKey("最大")
         default:
             return LocalizedStringKey(offset.formatted())
         }
@@ -38,9 +38,9 @@ struct GeneralSettingsPane: View {
     private var rehideIntervalKey: LocalizedStringKey {
         let formatted = manager.rehideInterval.formatted()
         if manager.rehideInterval == 1 {
-            return LocalizedStringKey(formatted + " second")
+            return LocalizedStringKey(formatted + " 秒")
         } else {
-            return LocalizedStringKey(formatted + " seconds")
+            return LocalizedStringKey(formatted + " 秒")
         }
     }
 
@@ -76,7 +76,7 @@ struct GeneralSettingsPane: View {
             }
         }
         .alert(isPresented: $isPresentingError, error: presentedError) {
-            Button("OK") {
+            Button("好") {
                 presentedError = nil
                 isPresentingError = false
             }
@@ -114,12 +114,12 @@ struct GeneralSettingsPane: View {
         Toggle("Show Ice icon", isOn: manager.bindings.showIceIcon)
             .annotation {
                 if !manager.showIceIcon {
-                    Text("You can still access Ice's settings by right-clicking an empty area in the menu bar")
+                    Text("可以通过右键点击菜单栏空白区域来打开 Ice 的设置")
                 }
             }
         if manager.showIceIcon {
-            IceMenu("Ice icon") {
-                Picker("Ice icon", selection: manager.bindings.iceIcon) {
+            IceMenu("Ice 图标") {
+                Picker("Ice 图标", selection: manager.bindings.iceIcon) {
                     ForEach(ControlItemImageSet.userSelectableIceIcons) { imageSet in
                         Button {
                             manager.iceIcon = imageSet
@@ -142,13 +142,13 @@ struct GeneralSettingsPane: View {
 
                 Divider()
 
-                Button("Choose image…") {
+                Button("选择图片…") {
                     isImportingCustomIceIcon = true
                 }
             } title: {
                 menuItem(for: manager.iceIcon)
             }
-            .annotation("Choose a custom icon to show in the menu bar")
+            .annotation("选择一个要在菜单栏中显示的自定义图标")
             .fileImporter(
                 isPresented: $isImportingCustomIceIcon,
                 allowedContentTypes: [.image]
@@ -167,8 +167,8 @@ struct GeneralSettingsPane: View {
             }
 
             if case .custom = manager.iceIcon.name {
-                Toggle("Apply system theme to icon", isOn: manager.bindings.customIceIconIsTemplate)
-                    .annotation("Display the icon as a monochrome image matching the system appearance")
+                Toggle("对图标应用系统主题", isOn: manager.bindings.customIceIconIsTemplate)
+                    .annotation("以匹配系统外观的单色图像显示图标")
             }
         }
     }
@@ -183,13 +183,13 @@ struct GeneralSettingsPane: View {
 
     @ViewBuilder
     private var useIceBar: some View {
-        Toggle("Use Ice Bar", isOn: manager.bindings.useIceBar)
-            .annotation("Show hidden menu bar items in a separate bar below the menu bar")
+        Toggle("使用 Ice Bar", isOn: manager.bindings.useIceBar)
+            .annotation("在菜单栏下方的独立面板中显示隐藏的菜单栏图标")
     }
 
     @ViewBuilder
     private var iceBarLocationPicker: some View {
-        IcePicker("Location", selection: manager.bindings.iceBarLocation) {
+        IcePicker("位置", selection: manager.bindings.iceBarLocation) {
             ForEach(IceBarLocation.allCases) { location in
                 Text(location.localized).tag(location)
             }
@@ -197,31 +197,31 @@ struct GeneralSettingsPane: View {
         .annotation {
             switch manager.iceBarLocation {
             case .dynamic:
-                Text("The Ice Bar's location changes based on context")
+                Text("Ice Bar 的位置会根据上下文自动变化")
             case .mousePointer:
-                Text("The Ice Bar is centered below the mouse pointer")
+                Text("Ice Bar 居中显示在鼠标指针下方")
             case .iceIcon:
-                Text("The Ice Bar is centered below the Ice icon")
+                Text("Ice Bar 居中显示在 Ice 图标下方")
             }
         }
     }
 
     @ViewBuilder
     private var showOnClick: some View {
-        Toggle("Show on click", isOn: manager.bindings.showOnClick)
-            .annotation("Click inside an empty area of the menu bar to show hidden menu bar items")
+        Toggle("点击时显示", isOn: manager.bindings.showOnClick)
+            .annotation("点击菜单栏空白区域以显示隐藏的菜单栏图标")
     }
 
     @ViewBuilder
     private var showOnHover: some View {
-        Toggle("Show on hover", isOn: manager.bindings.showOnHover)
-            .annotation("Hover over an empty area of the menu bar to show hidden menu bar items")
+        Toggle("悬停时显示", isOn: manager.bindings.showOnHover)
+            .annotation("将鼠标悬停在菜单栏空白区域以显示隐藏的菜单栏图标")
     }
 
     @ViewBuilder
     private var showOnScroll: some View {
-        Toggle("Show on scroll", isOn: manager.bindings.showOnScroll)
-            .annotation("Scroll or swipe in the menu bar to toggle hidden menu bar items")
+        Toggle("滚动时显示", isOn: manager.bindings.showOnScroll)
+            .annotation("在菜单栏上滚动或轻扫以切换显示隐藏的菜单栏图标")
     }
 
     @ViewBuilder
@@ -236,10 +236,10 @@ struct GeneralSettingsPane: View {
             .disabled(isApplyingOffset)
         } label: {
             IceLabeledContent {
-                Button("Apply") {
+                Button("应用") {
                     applyOffset()
                 }
-                .help("Apply the current spacing")
+                .help("应用当前间距")
                 .disabled(isApplyingOffset || !hasSpacingSliderValueChanged)
 
                 if isApplyingOffset {
@@ -254,24 +254,24 @@ struct GeneralSettingsPane: View {
                         Image(systemName: "arrow.counterclockwise.circle.fill")
                     }
                     .buttonStyle(.borderless)
-                    .help("Reset to the default spacing")
+                    .help("恢复默认间距")
                     .disabled(isApplyingOffset || !isActualOffsetDifferentFromDefault)
                 }
             } label: {
                 HStack {
-                    Text("Menu bar item spacing")
+                    Text("菜单栏图标间距")
                     BetaBadge()
                 }
             }
         }
         .annotation(
-            "Applying this setting will relaunch all apps with menu bar items. Some apps may need to be manually relaunched.",
+            "应用此设置会重启所有带有菜单栏图标的 App，部分 App 可能需要手动重新打开。",
             spacing: 2
         )
         .annotation(spacing: 10, font: .callout.bold()) {
             IceGroupBox {
                 Label {
-                    Text("Note: You may need to log out and back in for this setting to apply properly.")
+                    Text("注意：此设置可能需要注销并重新登录才能正常生效。")
                 } icon: {
                     Image(systemName: "exclamationmark.circle")
                 }
@@ -285,7 +285,7 @@ struct GeneralSettingsPane: View {
 
     @ViewBuilder
     private var rehideStrategyPicker: some View {
-        IcePicker("Strategy", selection: manager.bindings.rehideStrategy) {
+        IcePicker("策略", selection: manager.bindings.rehideStrategy) {
             ForEach(RehideStrategy.allCases) { strategy in
                 Text(strategy.localized).tag(strategy)
             }
@@ -293,18 +293,18 @@ struct GeneralSettingsPane: View {
         .annotation {
             switch manager.rehideStrategy {
             case .smart:
-                Text("Menu bar items are rehidden using a smart algorithm")
+                Text("使用智能算法自动重新隐藏菜单栏图标")
             case .timed:
-                Text("Menu bar items are rehidden after a fixed amount of time")
+                Text("在固定时间后重新隐藏菜单栏图标")
             case .focusedApp:
-                Text("Menu bar items are rehidden when the focused app changes")
+                Text("当焦点 App 变化时重新隐藏菜单栏图标")
             }
         }
     }
 
     @ViewBuilder
     private var autoRehideOptions: some View {
-        Toggle("Automatically rehide", isOn: manager.bindings.autoRehide)
+        Toggle("自动重新隐藏", isOn: manager.bindings.autoRehide)
         if manager.autoRehide {
             if case .timed = manager.rehideStrategy {
                 VStack {

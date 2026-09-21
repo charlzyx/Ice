@@ -19,11 +19,7 @@ struct AdvancedSettingsPane: View {
 
     private func formattedToSeconds(_ interval: TimeInterval) -> LocalizedStringKey {
         let formatted = interval.formatted()
-        return if interval == 1 {
-            LocalizedStringKey(formatted + " second")
-        } else {
-            LocalizedStringKey(formatted + " seconds")
-        }
+        return LocalizedStringKey(formatted + " 秒")
     }
 
     var body: some View {
@@ -42,7 +38,7 @@ struct AdvancedSettingsPane: View {
                 showOnHoverDelaySlider
                 tempShowIntervalSlider
             }
-            IceSection("Permissions") {
+            IceSection("权限") {
                 allPermissions
             }
         }
@@ -50,16 +46,16 @@ struct AdvancedSettingsPane: View {
 
     @ViewBuilder
     private var hideApplicationMenus: some View {
-        Toggle("Hide application menus when showing menu bar items", isOn: manager.bindings.hideApplicationMenus)
-            .annotation("Make more room in the menu bar by hiding the left application menus if needed")
+        Toggle("显示菜单栏图标时隐藏应用菜单", isOn: manager.bindings.hideApplicationMenus)
+            .annotation("在需要时隐藏左侧应用菜单，为菜单栏腾出更多空间")
     }
 
     @ViewBuilder
     private var showSectionDividers: some View {
-        Toggle("Show section dividers", isOn: manager.bindings.showSectionDividers)
+        Toggle("显示分组分隔符", isOn: manager.bindings.showSectionDividers)
             .annotation {
                 HStack(spacing: 2) {
-                    Text("Insert divider items")
+                    Text("在分组之间插入分隔图标")
                     if let nsImage = ControlItemImage.builtin(.chevronLarge).nsImage(for: appState) {
                         HStack(spacing: 0) {
                             Text("(")
@@ -70,25 +66,25 @@ struct AdvancedSettingsPane: View {
                                 .font(.body.monospaced().bold())
                         }
                     }
-                    Text("between sections")
+                    Text("位于分组之间")
                 }
             }
     }
 
     @ViewBuilder
     private var enableAlwaysHiddenSection: some View {
-        Toggle("Enable always-hidden section", isOn: manager.bindings.enableAlwaysHiddenSection)
+        Toggle("启用“始终隐藏”分组", isOn: manager.bindings.enableAlwaysHiddenSection)
     }
 
     @ViewBuilder
     private var canToggleAlwaysHiddenSection: some View {
         if manager.enableAlwaysHiddenSection {
-            Toggle("Always-hidden section can be shown", isOn: manager.bindings.canToggleAlwaysHiddenSection)
+            Toggle("允许切换“始终隐藏”分组", isOn: manager.bindings.canToggleAlwaysHiddenSection)
                 .annotation {
                     if appState.settingsManager.generalSettingsManager.showOnClick {
-                        Text("Option + click one of Ice's menu bar items, or inside an empty area of the menu bar to show the section")
+                        Text("按住 Option 键并点击 Ice 的某个菜单栏图标，或点击菜单栏空白区域即可显示该分组")
                     } else {
-                        Text("Option + click one of Ice's menu bar items to show the section")
+                        Text("按住 Option 键并点击 Ice 的某个菜单栏图标即可显示该分组")
                     }
                 }
         }
@@ -104,14 +100,14 @@ struct AdvancedSettingsPane: View {
                 step: 0.1
             )
         } label: {
-            Text("Show on hover delay")
+            Text("悬停显示延迟")
                 .frame(minHeight: .compactSliderMinHeight)
                 .frame(minWidth: maxSliderLabelWidth, alignment: .leading)
                 .onFrameChange { frame in
                     maxSliderLabelWidth = max(maxSliderLabelWidth, frame.width)
                 }
         }
-        .annotation("The amount of time to wait before showing on hover")
+        .annotation("悬停后等待多少时间才显示菜单栏图标")
     }
 
     @ViewBuilder
@@ -124,24 +120,24 @@ struct AdvancedSettingsPane: View {
                 step: 1
             )
         } label: {
-            Text("Temporarily shown item delay")
+            Text("临时显示持续时间")
                 .frame(minHeight: .compactSliderMinHeight)
                 .frame(minWidth: maxSliderLabelWidth, alignment: .leading)
                 .onFrameChange { frame in
                     maxSliderLabelWidth = max(maxSliderLabelWidth, frame.width)
                 }
         }
-        .annotation("The amount of time to wait before hiding temporarily shown menu bar items")
+        .annotation("临时显示的菜单栏图标在多少时间后重新隐藏")
     }
 
     @ViewBuilder
     private var showAllSectionsOnUserDrag: some View {
-        Toggle("Show all sections when Command + dragging menu bar items", isOn: manager.bindings.showAllSectionsOnUserDrag)
+        Toggle("按住 Command 拖动菜单栏图标时显示所有分组", isOn: manager.bindings.showAllSectionsOnUserDrag)
     }
 
     @ViewBuilder
     private var showContextMenuOnRightClick: some View {
-        Toggle("Show context menu on right click", isOn: manager.bindings.showContextMenuOnRightClick)
+        Toggle("右键点击时显示上下文菜单", isOn: manager.bindings.showContextMenuOnRightClick)
     }
 
     @ViewBuilder
@@ -150,13 +146,13 @@ struct AdvancedSettingsPane: View {
             IceLabeledContent {
                 if permission.hasPermission {
                     Label {
-                        Text("Permission Granted")
+                        Text("已授权")
                     } icon: {
                         Image(systemName: "checkmark.circle")
                             .foregroundStyle(.green)
                     }
                 } else {
-                    Button("Grant Permission") {
+                    Button("授权") {
                         permission.performRequest()
                     }
                 }
