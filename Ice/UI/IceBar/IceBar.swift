@@ -265,9 +265,30 @@ private struct IceBarContentView: View {
         imageCache.menuBarHeight ?? screen.getMenuBarHeight() ?? 24
     }
 
-    /// The width of the vertical bar, sized to fit a single menu bar item.
+    /// The size of each grid cell that contains a single menu bar item.
+    private var cellSize: CGFloat {
+        rowHeight * 1.6
+    }
+
+    /// The spacing between grid cells.
+    private var gridSpacing: CGFloat {
+        4
+    }
+
+    /// The number of columns in the grid, capped by the number of items.
+    private var gridColumnsCount: Int {
+        min(items.count, 4)
+    }
+
+    private var gridColumns: [GridItem] {
+        Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: max(gridColumnsCount, 1))
+    }
+
+    /// The width of the vertical bar, sized to fit the grid.
     private var contentWidth: CGFloat {
-        rowHeight + horizontalPadding * 2
+        CGFloat(max(gridColumnsCount, 1)) * cellSize
+            + CGFloat(max(gridColumnsCount - 1, 0)) * gridSpacing
+            + horizontalPadding * 2
     }
 
     /// The maximum height of the vertical bar, leaving room above and below
@@ -278,7 +299,8 @@ private struct IceBarContentView: View {
 
     /// The ideal height of the vertical bar, based on the number of items.
     private var idealContentHeight: CGFloat {
-        max(CGFloat(items.count) * rowHeight, rowHeight)
+        let rows = CGFloat((items.count + max(gridColumnsCount, 1) - 1) / max(gridColumnsCount, 1))
+        return max(rows * cellSize + (rows - 1) * gridSpacing, cellSize)
     }
 
     private var contentHeight: CGFloat {
@@ -344,12 +366,12 @@ private struct IceBarContentView: View {
                 .padding(.horizontal, 10)
         } else {
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                LazyVGrid(columns: gridColumns, spacing: gridSpacing) {
                     ForEach(items, id: \.windowID) { item in
-                        IceBarItemView(item: item, closePanel: closePanel)
-                            .frame(height: rowHeight)
+                        IceBarItemView(item: item, cellSize: cellSize, closePanel: closePanel)
                     }
                 }
+                .padding(1)
             }
             .defaultScrollAnchor(.leading)
             .scrollIndicators(.hidden)
@@ -364,6 +386,7 @@ private struct IceBarItemView: View {
     @EnvironmentObject var itemManager: MenuBarItemManager
 
     let item: MenuBarItem
+    let cellSize: CGFloat
     let closePanel: () -> Void
 
     private var leftClickAction: () -> Void {
@@ -409,6 +432,9 @@ private struct IceBarItemView: View {
     var body: some View {
         if let image {
             Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: cellSize, height: cellSize)
                 .contentShape(Rectangle())
                 .overlay {
                     IceBarItemClickView(item: item, leftClickAction: leftClickAction, rightClickAction: rightClickAction)
