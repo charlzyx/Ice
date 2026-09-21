@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Ice
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project Ice.xcodeproj \
+            -scheme Ice \
+            -configuration Release \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Ad-hoc sign
+        run: |
+          codesign --force --deep -s - DerivedData/Build/Products/Release/Ice.app
+          codesign --verify DerivedData/Build/Products/Release/Ice.app
+
+      - name: Zip app
+        run: |
+          cd DerivedData/Build/Products/Release
+          ditto -c -k --keepParent Ice.app Ice.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ice-${{ github.sha }}
+          path: DerivedData/Build/Products/Release/Ice.zip
